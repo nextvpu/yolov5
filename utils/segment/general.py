@@ -63,7 +63,15 @@ def process_mask(protos, masks_in, bboxes, shape, upsample=False):
 
     masks = crop_mask(masks, downsampled_bboxes)  # CHW
     if upsample:
-        masks = F.interpolate(masks[None], shape, mode='bilinear', align_corners=False)[0]  # CHW
+        #masks = F.interpolate(masks[None], shape, mode='bilinear', align_corners=False)[0]  # CHW
+
+        #The multiple is set according to your actual needs. You only need to modify this multiple
+        scale_factor = 4
+
+        inputShape = masks[None].shape
+        x = F.pad(masks[None], pad=(1, 1, 1, 1), mode="constant", value=0)
+        masks = F.interpolate(x, scale_factor = scale_factor, mode='bilinear', align_corners=False)  # CHW
+        masks = masks[:, :, 1 * scale_factor:inputShape[-2] * scale_factor + 1 * scale_factor, 1 * scale_factor:inputShape[-1] * scale_factor + 1 * scale_factor][0]
     return masks.gt_(0.5)
 
 
